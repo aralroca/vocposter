@@ -1,2 +1,2 @@
 # vocposter
-Simple application to try web components
+Simple application to try tailwind and vanillajs
