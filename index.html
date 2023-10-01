@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>VocPoster</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body onload="init()">
+  <section class="w-full py-12 md:py-24 lg:py-32">
+    <div class="container grid items-center justify-center gap-4 px-4 text-center md:px-6 lg:gap-10">
+      <div class="space-y-3">
+        <h2 class="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+          VocPoster
+        </h2>
+        <p
+          class="mx-auto max-w-[700px] text-zinc-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-zinc-400">
+          Organize your vocabulary into a printable grid.
+        </p>
+      </div>
+      <form class="space-y-3">
+        <input
+          class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full"
+          placeholder="Enter a vocabulary word" type="text"></input>
+        <button
+          class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+          type="submit">Add word</button>
+      </form>
+      <div id="grid" class="grid w-full grid-cols-2 gap-6 md:grid-cols-3 lg:gap-12">
+      </div>
+    </div>
+  </section>
+  <script>
+    function loadWords(e) {
+      if (e) e.preventDefault();
+
+      let words = JSON.parse(localStorage.getItem('words') ?? `[]`);
+
+      if (e) {
+        const input = document.querySelector('input');
+
+        words = [...words, input.value];
+
+        localStorage.setItem('words', JSON.stringify(words));
+
+        input.value = '';
+      }
+
+      const grid = document.getElementById('grid');
+
+      grid.innerHTML = '';
+
+      words.forEach(word => {
+        const div = document.createElement('div');
+        div.classList.add('vocword', 'p-4', 'border', 'border-gray-200', 'rounded', 'shadow-sm', 'cursor-pointer', 'hover:shadow-md', 'dark:border-gray-700', 'dark:hover:shadow-lg');
+        div.innerHTML = `<p class="vocword text-xl font-semibold">${word}</p>`;
+        grid.appendChild(div);
+      })
+    }
+
+    function init() {
+      const form = document.querySelector('form');
+
+      form.addEventListener('submit', loadWords);
+      loadWords();
+
+      document.addEventListener('click', e => {
+        if (!e.target.classList.contains('vocword')) return
+
+        const words = JSON.parse(localStorage.getItem('words') ?? `[]`);
+        const index = words.indexOf(e.target.innerText);
+
+        if (window.confirm(`Do you want to remove "${e.target.innerText}"?`)) {
+          words.splice(index, 1);
+          localStorage.setItem('words', JSON.stringify(words));
+          loadWords();
+          return
+        }
+
+        const newWord = window.prompt(`What do you want to replace "${e.target.innerText}" with?`)
+
+        if (newWord) {
+          words[index] = newWord;
+          localStorage.setItem('words', JSON.stringify(words));
+          loadWords();
+          return
+        }
+
+        const newIndex = window.prompt(`What index do you want to move "${e.target.innerText}" to?\n${words.map((word, i) => `${i}: ${word}`).join('\n')}`);
+
+        if (newIndex) {
+          words.splice(index, 1);
+          words.splice(newIndex, 0, e.target.innerText);
+          localStorage.setItem('words', JSON.stringify(words));
+          loadWords();
+          return
+        }
+      })
+    }
+  </script>
+</body>
+
+</html>
